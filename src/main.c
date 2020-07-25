@@ -154,7 +154,7 @@ onion_connection_status respond_file_specific(void *data, onion_request *req, on
 	struct stat st;
 	/* determine how to continue handling files depending on the type */
 
-	if(strchr(onion_request_get_fullpath(req), '.') && strcmp(strchr(onion_request_get_fullpath(req), '.'), ".stsml") != 0)
+	if(strrchr(onion_request_get_fullpath(req), '.') && strcmp(strrchr(onion_request_get_fullpath(req), '.'), ".stsml") != 0)
 	{
 		if(!stat(  (strlen(onion_request_get_fullpath(req)) <= 1) ? "." : ( &onion_request_get_fullpath(req)[(onion_request_get_fullpath(req)[0] == '/') ? 1 : 0] ) , &st) && S_ISREG(st.st_mode))
 		{
