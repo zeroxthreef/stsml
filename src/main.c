@@ -494,6 +494,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 	char *temp_str = NULL;
 	unsigned int i = 0, size = 0, total = 0, temp_uint = 0;
 	stsml_ctx_t *stsml_ctx = NULL;
+	onion_block *data;
 	stsml_task_args_t *task_args = NULL;
 	pthread_t id;
 	redisReply *reply = NULL;
@@ -580,6 +581,201 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 			if(!(ret = sts_value_from_number(script, 1.0)))
 			{
 				fprintf(stderr, "could not create new ret number\n");
+				return NULL;
+			}
+		}
+		else if(!strcmp("http-get-method", action->string.data))
+		{
+			#define METHOD_CASE(m) case OR_##m : if(!(ret = sts_value_from_string(script, #m)))	\
+			{	\
+				fprintf(stderr, "could not create new ret string\n");	\
+				return NULL;	\
+			} break
+
+			switch(onion_request_get_flags(stsml_ctx->req) & OR_METHODS)
+			{
+				METHOD_CASE(GET);
+				METHOD_CASE(POST);
+				METHOD_CASE(HEAD);
+				METHOD_CASE(OPTIONS);
+				METHOD_CASE(PROPFIND);
+				METHOD_CASE(PUT);
+				METHOD_CASE(DELETE);
+				METHOD_CASE(MOVE);
+				METHOD_CASE(MKCOL);
+				METHOD_CASE(PROPPATCH);
+				METHOD_CASE(PATCH);
+				default:
+					ONION_ERROR("invalid http method");
+					return NULL;
+			}
+		}
+		else if(!strcmp("http-get-body", action->string.data))
+		{
+			if((data = onion_request_get_data(stsml_ctx->req)))
+			{
+				if(!(ret = sts_value_from_nstring(script, onion_block_data(data), onion_block_size(data))))
+				{
+					fprintf(stderr, "could not create new ret string\n");
+					return NULL;
+				}
+			}
+			else
+			{
+				if(!(ret = sts_value_create(script, STS_NIL)))
+				{
+					fprintf(stderr, "could not create new ret nil\n");
+					return NULL;
+				}
+			}
+		}
+		else if(!strcmp("http-post-get", action->string.data))
+		{
+			if(args->next)
+			{
+				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
+				{
+					fprintf(stderr, "could not eval argument in http-post-get\n");
+					return NULL;
+				}
+				else if(eval_value->type != STS_STRING)
+				{
+					fprintf(stderr, "first argument in http-post-get is not a string\n");
+					return NULL;
+				}
+				else if(onion_request_get_post(stsml_ctx->req, eval_value->string.data))
+				{
+					if(!(ret = sts_value_from_string(script, onion_request_get_post(stsml_ctx->req, eval_value->string.data))))
+					{
+						fprintf(stderr, "could not create new ret string\n");
+
+						if(!sts_value_reference_decrement(script, eval_value))
+							fprintf(stderr, "could not refdec the argument\n");
+							
+						return NULL;
+					}
+				}
+				else
+				{
+					if(!(ret = sts_value_create(script, STS_NIL)))
+					{
+						fprintf(stderr, "could not create new ret nil\n");
+
+						if(!sts_value_reference_decrement(script, eval_value))
+							fprintf(stderr, "could not refdec the argument\n");
+							
+						return NULL;
+					}
+				}
+
+				/* === */
+				if(eval_value)
+					if(!sts_value_reference_decrement(script, eval_value))
+						fprintf(stderr, "could not refdec the argument\n");
+			}
+			else
+			{
+				fprintf(stderr, "http-post-get requires 1 string argument\n");
+				return NULL;
+			}
+		}
+		else if(!strcmp("http-query-get", action->string.data))
+		{
+			if(args->next)
+			{
+				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
+				{
+					fprintf(stderr, "could not eval argument in http-query-get\n");
+					return NULL;
+				}
+				else if(eval_value->type != STS_STRING)
+				{
+					fprintf(stderr, "first argument in http-query-get is not a string\n");
+					return NULL;
+				}
+				else if(onion_request_get_query(stsml_ctx->req, eval_value->string.data))
+				{
+					if(!(ret = sts_value_from_string(script, onion_request_get_query(stsml_ctx->req, eval_value->string.data))))
+					{
+						fprintf(stderr, "could not create new ret string\n");
+
+						if(!sts_value_reference_decrement(script, eval_value))
+							fprintf(stderr, "could not refdec the argument\n");
+							
+						return NULL;
+					}
+				}
+				else
+				{
+					if(!(ret = sts_value_create(script, STS_NIL)))
+					{
+						fprintf(stderr, "could not create new ret nil\n");
+
+						if(!sts_value_reference_decrement(script, eval_value))
+							fprintf(stderr, "could not refdec the argument\n");
+							
+						return NULL;
+					}
+				}
+
+				/* === */
+				if(eval_value)
+					if(!sts_value_reference_decrement(script, eval_value))
+						fprintf(stderr, "could not refdec the argument\n");
+			}
+			else
+			{
+				fprintf(stderr, "http-query-get requires 1 string argument\n");
+				return NULL;
+			}
+		}
+		else if(!strcmp("http-file-get", action->string.data))
+		{
+			if(args->next)
+			{
+				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
+				{
+					fprintf(stderr, "could not eval argument in http-file-get\n");
+					return NULL;
+				}
+				else if(eval_value->type != STS_STRING)
+				{
+					fprintf(stderr, "first argument in http-file-get is not a string\n");
+					return NULL;
+				}
+				else if(onion_request_get_file(stsml_ctx->req, eval_value->string.data))
+				{
+					if(!(ret = sts_value_from_string(script, onion_request_get_file(stsml_ctx->req, eval_value->string.data))))
+					{
+						fprintf(stderr, "could not create new ret string\n");
+
+						if(!sts_value_reference_decrement(script, eval_value))
+							fprintf(stderr, "could not refdec the argument\n");
+							
+						return NULL;
+					}
+				}
+				else
+				{
+					if(!(ret = sts_value_create(script, STS_NIL)))
+					{
+						fprintf(stderr, "could not create new ret nil\n");
+
+						if(!sts_value_reference_decrement(script, eval_value))
+							fprintf(stderr, "could not refdec the argument\n");
+							
+						return NULL;
+					}
+				}
+
+				/* === */
+				if(eval_value)
+					if(!sts_value_reference_decrement(script, eval_value))
+						fprintf(stderr, "could not refdec the argument\n");
+			}
+			else
+			{
+				fprintf(stderr, "http-file-get requires 1 string argument\n");
 				return NULL;
 			}
 		}

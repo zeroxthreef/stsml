@@ -63,6 +63,21 @@ Append strings to the current http buffer.
 `http-clear`<br>
 Clear the http buffer.
 
+`http-get-method`<br>
+Returns the current http method as a string like 'GET'.
+
+`http-get-body`<br>
+Returns the raw http body.
+
+`http-post-get post_key_str`<br>
+Returns post data as a string if found, nil if not.
+
+`http-query-get query_key_str`<br>
+Returns url query data as a string if found, nil if not.
+
+`http-file-get post_file_name_str`<br>
+Returns a string of the file uploaded if found, nil if not.
+
 `http-cookie-get cookie_key_str`<br>
 Returns the cookie value if found, nil if not.
 

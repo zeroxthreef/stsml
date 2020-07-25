@@ -54,6 +54,8 @@ http-cookie-put test_cookie "hello world :)" 10 1
 		%>
 
 		<h2>if the startup script has been executed:</h2>
-		<b><%? pass $startup_global %></b>
+		<b><%? pass $startup_global %></b><br>
+		<b>http method: <%? http-get-method %></b><br>
+
 	</body>
 </html>
