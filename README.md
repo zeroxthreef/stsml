@@ -1,5 +1,5 @@
 # STSML
-STS Markup Language was made to do simple scriptable html modifications with the scripting language [STS](https://github.com/zeroxthreef/SimpleTinyScript) (simple tiny script). Think of PHP but this is nowhere near that level.
+STS Markup Language can do simple scriptable html modifications with the scripting language [STS](https://github.com/zeroxthreef/SimpleTinyScript) (simple tiny script). Sort of like of PHP but this is nowhere near that level.
 
 stsml has an asynchronus task system and redis client functions built in.
 
@@ -105,6 +105,23 @@ Display an stsml file if everything else fails. Note that this will halt the ser
 
 `-working_dir`<br>
 Set the server working directory.
+
+
+## Building & Installing
+stsml depends on [hiredis](https://github.com/redis/hiredis) and [onion](https://github.com/davidmoreno/onion).
+
+**Debian/Ubuntu:**<br>
+``
+sudo apt install libhiredis-dev
+git clone https://github.com/davidmoreno/onion.git
+cd onion
+... complete onion install instructions
+cd ..
+git clone https://github.com/zeroxthreef/stsml.git --recursive
+cd stsml
+./build.sh
+sudo ./install.sh
+``
 
 
 ## License
