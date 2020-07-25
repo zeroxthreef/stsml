@@ -111,7 +111,7 @@ Set the server working directory.
 stsml depends on [hiredis](https://github.com/redis/hiredis) and [onion](https://github.com/davidmoreno/onion).
 
 **Debian/Ubuntu:**<br>
-``
+```
 sudo apt install libhiredis-dev
 git clone https://github.com/davidmoreno/onion.git
 cd onion
@@ -121,7 +121,7 @@ git clone https://github.com/zeroxthreef/stsml.git --recursive
 cd stsml
 ./build.sh
 sudo ./install.sh
-``
+```
 
 
 ## License
