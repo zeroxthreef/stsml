@@ -86,7 +86,7 @@ Sends a Redis command to the global connection. Will only take strings and numbe
 
 This returns a value that converts the redis response to an STS value, so it may be an array, string, or any other kind of value.
 
-`task-create ...`<br>
+`task-create script_file ...`<br>
 Create a task thread for asynchronus things. Can run forever if necessary. **Note that these do not share globals with the rest of the system** and all arguments passed are recursively copied.
 
 
