@@ -1,0 +1,4 @@
+import stdlib.sts
+
+print hello, this came from a task
+print supplied arguments: [string-value-print $args]

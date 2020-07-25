@@ -1,0 +1,21 @@
+<%
+	if $global_var {
+		print global exists
+		set $global_var [string $global_var " :)" ]
+	}
+	else {
+		print global didnt exist
+		global global_var "hello world"
+	}
+
+	if $local_var {
+		print local exists
+		set $local_var [string $local_var " :]" ]
+	}
+	else {
+		print local didnt exist
+		local local_var "hello "
+	}
+%>
+
+<h1> values: <%? pass $global_var %>, <%? pass $local_var %></h2>

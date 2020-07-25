@@ -1,0 +1,9 @@
+<html>
+	<body>
+		<h1>the following are included into this file</h1>
+		<%! example/include_other.stsml %><br>
+		<%@ include_other.stsml %><br>
+		<br>
+		raw print test: <%? + 4 4 %>
+	</body>
+</html>

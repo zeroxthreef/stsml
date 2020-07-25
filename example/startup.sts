@@ -1,0 +1,9 @@
+# this is an example startup script. Pass this to
+# the server by running 'stsml -init example/startup.sts'
+
+# its a good idea to establish a connection to a redis
+# server here
+
+global startup_global "hello world :)"
+
+print hello from startup script

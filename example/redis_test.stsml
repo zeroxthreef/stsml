@@ -1,0 +1,25 @@
+<%
+	import stdlib.sts
+
+	# ideally, this would be done in a startup script
+	if(! [redis-connect "127.0.0.1" 6379]) {
+		print could not connect to redis db
+	}
+	else {
+		redis SET "test_key" "hello world"
+		redis SET "number_key" 12345
+		redis HMSET hash_key hello world test 4 test2 cool
+	}
+%>
+
+<html>
+	<head>
+		<title>redis test</title>
+	</head>
+	<body>
+		<h1>value of a key set earlier</h1>
+		test_key: <b><%? redis GET "test_key" %></b><br>
+		number_key: <b><%? redis GET "number_key" %></b><br>
+		hash_key: <b><%? string-value-print [redis HGETALL hash_key] %></b><br>
+	</body>
+</html>

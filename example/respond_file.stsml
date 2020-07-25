@@ -1,0 +1,10 @@
+this shouldnt print anything on the page
+<%
+import stdlib.sts
+
+
+# a bit verbose, but this returns a file in the same directory as the current file
+
+http-write-file [string (getpwd [self-name]) "index.html"]
+
+%>

@@ -1,0 +1,59 @@
+<%
+import stdlib.sts
+
+local i 0
+local temp $nil
+
+if $visits {
+	++ $visits
+}
+else {
+	global visits 1
+}
+
+http-header-put test-header hello
+
+http-cookie-put test_cookie "hello world :)" 10 1
+
+%>
+
+<html>
+	<body>
+		<h1> you have been to this page <% http-write (string $visits) %> times </h1>
+		<h2>your user agent is <i> <% http-write [string (http-header-get "User-Agent")] %> </h2></i>
+		<% if 0 { %>
+
+			data from sts: <% http-write hello? %>
+			<hr>
+			<% http-write hello? %><br>
+			<% http-write hello? %><br>
+			<% http-write hello? %><br>
+
+		<% }; %><% else { %>
+
+			hey, things are gone
+
+		<% } %>
+
+		<%# comment %>
+
+		<% loop(< $i 5) { %>
+
+			<b><i>helloooooo</i></b><br>
+
+		<% ++ $i; } %>
+
+
+		<h2>pipeout test</h2>
+		<%
+			#pipeout $temp neofetch | aha --black
+
+			#set $temp (string-replace $temp "\n" "\n<br>")
+
+			#http-write $temp
+		%>
+
+		<h2>if the startup script has been executed:</h2>
+		<b><%? pass $startup_global %></b>
+	</body>
+</html>

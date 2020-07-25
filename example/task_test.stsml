@@ -1,0 +1,8 @@
+<%
+	task-create example/task_script.sts hello world
+%>
+<html>
+	<body>
+		this will run a task script that prints to the console
+	</body>
+</html>

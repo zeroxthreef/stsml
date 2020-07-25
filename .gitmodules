@@ -1,0 +1,3 @@
+[submodule "lib/SimpleTinyScript"]
+	path = lib/SimpleTinyScript
+	url = https://github.com/zeroxthreef/SimpleTinyScript.git
