@@ -76,7 +76,7 @@ Returns post data as a string if found, nil if not.
 Returns url query data as a string if found, nil if not.
 
 `http-file-get post_file_name_str`<br>
-Returns a string of the file uploaded if found, nil if not.
+Returns a string of the file uploaded to a path somewhere in /tmp/ if exists, nil if not. Note that this temporary file disappears when the script exits.
 
 `http-cookie-get cookie_key_str`<br>
 Returns the cookie value if found, nil if not.
