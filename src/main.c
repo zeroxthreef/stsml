@@ -153,7 +153,7 @@ onion_connection_status respond_file_specific(void *data, onion_request *req, on
 {
 	struct stat st;
 	/* determine how to continue handling files depending on the type */
-	
+
 	if(!(strrchr(onion_request_get_fullpath(req), '.') && !strcmp(strrchr(onion_request_get_fullpath(req), '.'), ".stsml")))
 	{
 		if(!stat(  (strlen(onion_request_get_fullpath(req)) <= 1) ? "." : ( &onion_request_get_fullpath(req)[(onion_request_get_fullpath(req)[0] == '/') ? 1 : 0] ) , &st) && S_ISREG(st.st_mode))
@@ -584,7 +584,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 				return NULL;
 			}
 		}
-		else if(!strcmp("http-get-method", action->string.data))
+		else if(!strcmp("http-method-get", action->string.data))
 		{
 			#define METHOD_CASE(m) case OR_##m : if(!(ret = sts_value_from_string(script, #m)))	\
 			{	\
@@ -610,7 +610,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 					return NULL;
 			}
 		}
-		else if(!strcmp("http-get-body", action->string.data))
+		else if(!strcmp("http-body-get", action->string.data))
 		{
 			if((data = onion_request_get_data(stsml_ctx->req)))
 			{

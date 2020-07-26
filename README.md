@@ -63,10 +63,10 @@ Append strings to the current http buffer.
 `http-clear`<br>
 Clear the http buffer.
 
-`http-get-method`<br>
+`http-method-get`<br>
 Returns the current http method as a string like 'GET'.
 
-`http-get-body`<br>
+`http-body-get`<br>
 Returns the raw http body.
 
 `http-post-get post_key_str`<br>
