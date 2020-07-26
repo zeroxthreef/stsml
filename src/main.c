@@ -469,6 +469,9 @@ void *start_task(stsml_task_args_t *args_pass)
 	/* cleanup */
 cleanup:
 
+	if(ctx.redis_ctx)
+		redisFree(ctx.redis_ctx);
+
 	if(res)
 		sts_value_reference_decrement(&script, res);
 
