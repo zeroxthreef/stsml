@@ -153,13 +153,13 @@ onion_connection_status respond_file_specific(void *data, onion_request *req, on
 {
 	struct stat st;
 	/* determine how to continue handling files depending on the type */
-
-	if(strrchr(onion_request_get_fullpath(req), '.') && strcmp(strrchr(onion_request_get_fullpath(req), '.'), ".stsml") != 0)
+	
+	if(!(strrchr(onion_request_get_fullpath(req), '.') && !strcmp(strrchr(onion_request_get_fullpath(req), '.'), ".stsml")))
 	{
 		if(!stat(  (strlen(onion_request_get_fullpath(req)) <= 1) ? "." : ( &onion_request_get_fullpath(req)[(onion_request_get_fullpath(req)[0] == '/') ? 1 : 0] ) , &st) && S_ISREG(st.st_mode))
 		{
 			ONION_DEBUG("responding as a file '%s'", onion_request_get_fullpath(req));
-			onion_shortcut_response_file(onion_request_get_fullpath(req), req, res);
+			onion_shortcut_response_file((strlen(onion_request_get_fullpath(req)) <= 1) ? "." : ( &onion_request_get_fullpath(req)[(onion_request_get_fullpath(req)[0] == '/') ? 1 : 0] ), req, res);
 
 			return OCS_PROCESSED;
 		}
