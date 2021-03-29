@@ -525,16 +525,30 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 			(dest)[current_size + (middle_size) + (end_size)] = 0x0;	\
 			current_size += (middle_size) + (end_size);	\
 		}while(0)
+	
+	#ifdef STS_GOTO_JIT
+		#define GOTO_LABEL_CAT_(a, b) a ## b
+		#define GOTO_LABEL_CAT(a, b) GOTO_LABEL_CAT_(a, b)
+		#define GOTO_SET(id) do{args->label = && GOTO_LABEL_CAT(sts_jit_, __LINE__); args->router_id = (void *)(id); GOTO_LABEL_CAT(sts_jit_, __LINE__):;}while(0)
+		#define GOTO_JMP(id) do{if(args->router_id == (void *)(id)){goto *(args->label);}}while(0)
+		#define GOTO_ACTIVATED (args->router_id)
+	#else
+		#define GOTO_SET(id)
+		#define GOTO_JMP(id)
+		#define GOTO_ACTIVATED
+	#endif
 
 
 
 	stsml_ctx = script->userdata;
 
 	/* printf("=========== %p %p %s\n", script->globals, locals, action->string.data); */
-	if(action->type == STS_STRING)
+	GOTO_JMP(&server_actions);
+	if(!GOTO_ACTIVATED && action->type == STS_STRING)
 	{
 		if(!strcmp("http-write", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -575,6 +589,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-clear", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(stsml_ctx->response_str->string.length)
 			{
 				stsml_ctx->response_str->string.data[0] = 0x0;
@@ -589,6 +604,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-method-get", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			#define METHOD_CASE(m) case OR_##m : if(!(ret = sts_value_from_string(script, #m)))	\
 			{	\
 				fprintf(stderr, "could not create new ret string\n");	\
@@ -615,6 +631,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-body-get", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if((data = onion_request_get_data(stsml_ctx->req)))
 			{
 				if(!(ret = sts_value_from_nstring(script, onion_block_data(data), onion_block_size(data))))
@@ -634,6 +651,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-post-get", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -684,6 +702,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-query-get", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -734,6 +753,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-file-get", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -784,6 +804,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-cookie-get", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -835,6 +856,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		/* http-cookie-put string name, string value, number time_valid(added to current time, if 0 expire now, if -1 never expire), number flags */
 		else if(!strcmp("http-cookie-put", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next && args->next->next && args->next->next->next && args->next->next->next->next)
 			{
 				if(!(first_arg_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -928,6 +950,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-header-get", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -978,6 +1001,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-header-put", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next && args->next->next)
 			{
 				if(!(first_arg_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -1043,6 +1067,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("http-write-file", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -1088,6 +1113,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("redis-connect", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next && args->next->next)
 			{
 				if(!(first_arg_value = sts_eval(script, args->next, locals, previous, 1, 0)))
@@ -1150,6 +1176,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("redis", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				/* have to stash all arguments in a temporary array and destroy this at the end */
@@ -1245,6 +1272,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 		}
 		else if(!strcmp("task-create", action->string.data))
 		{
+			GOTO_SET(&server_actions);
 			if(args->next)
 			{
 				if(!(first_arg_value = sts_eval(script, args->next, locals, previous, 1, 0)))
