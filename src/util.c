@@ -99,7 +99,7 @@ sts_value_t *stsml_value_from_redis(sts_script_t *script, redisReply *reply)
 					return NULL;
 				}
 
-				sts_array_append_insert(ret, temp, ret->array.length);
+				sts_array_append_insert(script, ret, temp, ret->array.length);
 			}
 		break;
 	}

@@ -1173,7 +1173,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 					switch(eval_value->type)
 					{
 						case STS_STRING:
-							sts_array_append_insert(temp_value, eval_value, 0);
+							sts_array_append_insert(script, temp_value, eval_value, 0);
 
 							redis_args[i] = eval_value->string.data;
 							redis_args_size[i] = eval_value->string.length;
@@ -1277,7 +1277,7 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 					}
 
 
-					sts_array_append_insert(temp_value, eval_value, temp_value->array.length);
+					sts_array_append_insert(script, temp_value, eval_value, temp_value->array.length);
 				}
 
 
