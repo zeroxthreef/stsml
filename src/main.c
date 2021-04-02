@@ -647,6 +647,15 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 					return NULL;
 			}
 		}
+		else if(!strcmp("http-path-get", action->string.data))
+		{
+			GOTO_SET(&server_actions);
+			if(!(ret = sts_value_from_string(script, onion_request_get_path(stsml_ctx->req))))
+			{
+				fprintf(stderr, "could not create new ret string\n");
+				return NULL;
+			}
+		}
 		else if(!strcmp("http-body-get", action->string.data))
 		{
 			GOTO_SET(&server_actions);

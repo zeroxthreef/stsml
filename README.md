@@ -66,6 +66,9 @@ Clear the http buffer.
 `http-method-get`<br>
 Returns the current http method as a string like 'GET'.
 
+`http-path-get`<br>
+Returns the current http not-query string aka the request path
+
 `http-body-get`<br>
 Returns the raw http body.
 
