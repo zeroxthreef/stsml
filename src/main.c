@@ -88,7 +88,7 @@ typedef struct
 
 	redisContext *redis_ctx;
 
-	sts_value_t *cleanup, *response_str, *response_file;
+	sts_value_t *cleanup, *response_str, *response_file, *respond_redirect;
 
 	int http_status;
 
@@ -171,7 +171,7 @@ onion_connection_status respond_file_specific(void *data, onion_request *req, on
 onion_connection_status respond_stsml(void *data, onion_request *req, onion_response *res)
 {
 	size_t size;
-	char *script_file = NULL, *parsed_stsml = NULL, *script_path = NULL, *temp_str = NULL;;
+	char *script_file = NULL, *parsed_stsml = NULL, *script_path = NULL, *temp_str = NULL, *redirect = NULL;
 	unsigned int line = 0, offset = 0;
 	stsml_ctx_t *stsml_ctx = (stsml_ctx_t *)data;
 	sts_value_t *ret_val = NULL;
@@ -205,6 +205,12 @@ onion_connection_status respond_stsml(void *data, onion_request *req, onion_resp
 		}
 
 		if(!(stsml_ctx->response_file = sts_value_create(stsml_ctx->script, STS_STRING)))
+		{
+			ONION_ERROR("could not initialize stsml ctx");
+			return OCS_NOT_PROCESSED;
+		}
+
+		if(!(stsml_ctx->respond_redirect = sts_value_create(stsml_ctx->script, STS_STRING)))
 		{
 			ONION_ERROR("could not initialize stsml ctx");
 			return OCS_NOT_PROCESSED;
@@ -356,7 +362,9 @@ onion_connection_status respond_stsml(void *data, onion_request *req, onion_resp
 		onion_response_set_code(res, stsml_ctx->http_status);
 
 
-		if(stsml_ctx->response_file->string.length)
+		if(stsml_ctx->respond_redirect->string.length)
+			redirect = sts_memdup(stsml_ctx->respond_redirect->string.data, stsml_ctx->respond_redirect->string.length);
+		else if(stsml_ctx->response_file->string.length)
 			onion_shortcut_response_file(stsml_ctx->response_file->string.data, req, res);
 		else if(stsml_ctx->response_str->string.length)
 			onion_response_write(res, stsml_ctx->response_str->string.data, stsml_ctx->response_str->string.length);
@@ -372,9 +380,19 @@ onion_connection_status respond_stsml(void *data, onion_request *req, onion_resp
 		if(!sts_value_reference_decrement(stsml_ctx->script, stsml_ctx->response_str))
 			ONION_ERROR("could not refdec response string value for script %s", script_path);
 
+		if(!sts_value_reference_decrement(stsml_ctx->script, stsml_ctx->respond_redirect))
+			ONION_ERROR("could not refdec redirect string value for script %s", script_path);
+
 		if(!sts_value_reference_decrement(stsml_ctx->script, stsml_ctx->cleanup))
 			ONION_ERROR("could not refdec cleanup array value for script %s", script_path);
 
+
+		/* unfortunately have to do this because the stsml ctx will be reused. Obviously theres a much better way to do this, but I just want something that works well enough */
+		if(redirect)
+		{
+			onion_shortcut_internal_redirect(redirect, req, res);
+			free(redirect);
+		}
 
 		return OCS_PROCESSED;
 	}
@@ -1111,6 +1129,51 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 				return NULL;
 			}
 		}
+		else if(!strcmp("http-route", action->string.data))
+		{
+			GOTO_SET(&server_actions);
+			if(args->next)
+			{
+				if(!(eval_value = sts_eval(script, args->next, locals, previous, 1, 0)))
+				{
+					fprintf(stderr, "could not eval argument in http-route\n");
+					return NULL;
+				}
+				else if(eval_value->type != STS_STRING)
+				{
+					fprintf(stderr, "first argument in http-route is not a string\n");
+					return NULL;
+				}
+				else
+				{
+					if(sts_value_copy(script, stsml_ctx->respond_redirect, eval_value, 0))
+					{
+						fprintf(stderr, "could not set file path response string in http-route\n");
+						return NULL;
+					}
+
+					if(!(ret = sts_value_from_number(script, 1.0)))
+					{
+						fprintf(stderr, "could not create new ret number\n");
+
+						if(!sts_value_reference_decrement(script, eval_value))
+							fprintf(stderr, "could not refdec the argument\n");
+							
+						return NULL;
+					}
+				}
+
+				/* === */
+				if(eval_value)
+					if(!sts_value_reference_decrement(script, eval_value))
+						fprintf(stderr, "could not refdec the argument\n");
+			}
+			else
+			{
+				fprintf(stderr, "http-route requires 1 string argument\n");
+				return NULL;
+			}
+		}
 		else if(!strcmp("redis-connect", action->string.data))
 		{
 			GOTO_SET(&server_actions);
@@ -1393,11 +1456,10 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 				return NULL;
 			}
 		}
-
-
-		if(!ret)
-			ret = cli_actions(script, action, args, locals, previous);
 	}
+
+	if(!ret)
+		ret = cli_actions(script, action, args, locals, previous);
 
 	return ret;
 }
@@ -1407,7 +1469,7 @@ char *stsml_import(sts_script_t *script, char *file)
 	if(!strcmp(file, "stdlib.sts"))
 	{
 		#ifdef COMPILING
-			return strdup(lib_SimpleTinyScript_stdlib_sts);
+			return sts_memdup(lib_SimpleTinyScript_stdlib_sts, lib_SimpleTinyScript_stdlib_sts_len);
 		#endif
 	}
 	return NULL;

@@ -1,0 +1,4 @@
+this text will not be seen
+<%
+	http-route local_test.stsml
+%>

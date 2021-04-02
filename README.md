@@ -93,6 +93,9 @@ Set an http header to the header value string.
 `http-write-file path_str`<br>
 Write a file to the http buffer instead. This is loaded after scripts finish and overrides the regular buffer.
 
+`http-route absolute_str`<br>
+Reroute the server internally. Path is absolute and the root is the working directory.
+
 `redis-connect ip_str port_number`<br>
 Connects to a Redis server and returns 1.0 on a successful connection, 0.0 otherwise.
 
