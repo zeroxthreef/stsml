@@ -83,6 +83,8 @@ typedef struct
 
 	sts_map_row_t *script_locals;
 
+	onion *onion;
+
 	onion_request *req;
 	onion_response *res;
 
@@ -1465,6 +1467,18 @@ sts_value_t *server_actions(sts_script_t *script, sts_value_t *action, sts_node_
 				return NULL;
 			}
 		}
+		else if(!strcmp("stop", action->string.data))
+		{
+			GOTO_SET(&server_actions);
+
+			onion_listen_stop(stsml_ctx->onion);
+			
+			if(!(ret = sts_value_from_number(script, 1.0)))
+			{
+				fprintf(stderr, "could not create new ret number\n");
+				return NULL;
+			}
+		}
 	}
 
 	if(!ret)
@@ -1602,7 +1616,7 @@ int main(int argc, char **argv)
 
 	/* initialize onion */
 
-	if(!(on = onion_new(O_ONE_LOOP)))
+	if(!(ctx.onion = on = onion_new(O_ONE_LOOP)))
 	{
 		ONION_ERROR("could not initialize onion");
 		return 1;
@@ -1715,9 +1729,6 @@ int main(int argc, char **argv)
 
 	/* ================================= */
 	ONION_INFO("exitting...");
-
-	if(onion_listen(on))
-		ONION_ERROR("could not listen to incomming connections");
 
 
 	/* destroy all locals */

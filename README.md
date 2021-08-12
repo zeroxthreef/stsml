@@ -110,6 +110,9 @@ This returns a value that converts the redis response to an STS value, so it may
 `task-create script_file ...`<br>
 Create a task thread for asynchronus things. Can run forever if necessary. **Note that these do not share globals with the rest of the system** and all arguments passed are recursively copied.
 
+`stop`<br>
+Stop listening for new connections and stop the server process cleanly.
+
 
 ## Server Usage
 `-help`<br>
